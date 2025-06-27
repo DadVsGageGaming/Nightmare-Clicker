@@ -56,6 +56,7 @@ let fear = 0;
 let fpc = 1;
 let fps = 0;
 let currentKiller = 0;
+let lastUnlockedKillerIndex = 0; // track last unlocked killer index
 let chuckyClickCount = 0;
 let chuckyUnlocked = false;
 let tiffanyClickCount = 0;
@@ -208,7 +209,25 @@ function playAudioForKiller(killerName) {
 function clickKiller() {
   const mult = killers[currentKiller].multiplier;
   fear += fpc * mult;
+  checkUnlocks();
   updateDisplay();
+}
+
+// Check if you just unlocked a killer and play their theme if so
+function checkUnlocks() {
+  // Go through killers in order, unlock if fear >= unlock
+  for(let i = lastUnlockedKillerIndex + 1; i < killers.length; i++) {
+    if(fear >= killers[i].unlock){
+      lastUnlockedKillerIndex = i;
+      alert(`🎉 You unlocked: ${killers[i].name}!`);
+      playAudioForKiller(killers[i].name);
+      // If unlocking secret killer, handle special unlock too (Chucky & Tiffany)
+      if(killers[i].name === "💘 Chucky & Tiffany"){
+        chuckyUnlocked = true;
+      }
+      break; // only unlock one killer at a time
+    }
+  }
 }
 
 function buyUpgrade(kIndex, uIndex) {
@@ -224,23 +243,18 @@ function buyUpgrade(kIndex, uIndex) {
 }
 
 function nextKiller() {
-  if (currentKiller < killers.length - 1) {
-    currentKiller++;
-    playAudioForKiller(killers[currentKiller].name);
-  }
+  if (currentKiller < killers.length - 1) currentKiller++;
   updateDisplay();
 }
 
 function prevKiller() {
-  if (currentKiller > 0) {
-    currentKiller--;
-    playAudioForKiller(killers[currentKiller].name);
-  }
+  if (currentKiller > 0) currentKiller--;
   updateDisplay();
 }
 
 setInterval(() => {
   fear += fps;
+  checkUnlocks();
   updateDisplay();
 }, 1000);
 
@@ -248,7 +262,7 @@ setInterval(() => {
 function countKillerClicks() {
   const name = killers[currentKiller].name;
 
-  // Unlock Chucky & Tiffany
+  // Unlock Chucky & Tiffany secret killer
   if (name.includes("Chucky") && !chuckyUnlocked) {
     chuckyClickCount++;
     if (chuckyClickCount === 20) {
@@ -261,8 +275,8 @@ function countKillerClicks() {
       alert("💘 You unlocked the secret killer: Chucky & Tiffany!");
       chuckyUnlocked = true;
       currentKiller = killers.length - 1;
-      updateDisplay();
       playAudioForKiller("💘 Chucky & Tiffany");
+      updateDisplay();
     }
   }
 
@@ -274,13 +288,12 @@ function countKillerClicks() {
       alert("🔥 Tiffany's secret OP upgrades unlocked!");
       tiffanyUpgradesUnlocked = true;
       updateDisplay();
-      playAudioForKiller("💘 Chucky & Tiffany");
     }
   }
 }
 
-// Play initial killer audio
-playAudioForKiller(killers[currentKiller].name);
+// At start, play Jason's music (since unlocked by default)
+playAudioForKiller("🪓 Jason Voorhees");
 updateDisplay();
 
 </script>
