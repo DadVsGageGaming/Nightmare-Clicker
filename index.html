@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Slasher Clicker</title>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #ff0000;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 10px 20px;
+      margin: 10px;
+      background: #111;
+      color: #ff0000;
+      border: none;
+      border-radius: 8px;
+    }
+    .killer-title {
+      font-size: 2em;
+      margin: 20px 0;
+      cursor: pointer;
+    }
+    .upgrade {
+      background: #222;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .upgrade:hover {
+      background: #330000;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔪 Slasher Clicker</h1>
+  <div class="killer-title" id="killerName" onclick="countKillerClicks()">🪓 Jason Voorhees</div>
+  <div>Fear: <span id="fear">0</span></div>
+  <div>Fear Per Click: <span id="fpc">1</span></div>
+  <div>Fear Per Second: <span id="fps">0</span></div>
+  <button onclick="clickKiller()">ATTACK!</button>
+  <br>
+  <button onclick="prevKiller()">⬅️</button>
+  <button onclick="nextKiller()">➡️</button>
+  <h2>Upgrades</h2>
+  <div id="upgrades"></div>
+
+<script>
+let fear = 0;
+let fpc = 1;
+let fps = 0;
+let currentKiller = 0;
+let killerClickCount = 0;
+let chuckyClickCount = 0;
+let chuckyUnlocked = false;
+
+const killers = [
+  {
+    name: "🪓 Jason Voorhees",
+    unlock: 0,
+    multiplier: 1,
+    upgrades: [
+      { name: "Machete Swipe", type: "FPC", cost: 100, effect: 10 },
+      { name: "Campfire Fear", type: "FPC", cost: 500, effect: 25 },
+      { name: "Crystal Lake Curse", type: "FPS", cost: 1000, effect: 50 }
+    ]
+  },
+  {
+    name: "🔪 Michael Myers",
+    unlock: 10000,
+    multiplier: 5,
+    upgrades: [
+      { name: "Silent Stab", type: "FPC", cost: 20000, effect: 100 },
+      { name: "Halloween Haunt", type: "FPS", cost: 40000, effect: 500 }
+    ]
+  },
+  {
+    name: "🧤 Freddy Krueger",
+    unlock: 100000,
+    multiplier: 10,
+    upgrades: [
+      { name: "Dream Slash", type: "FPC", cost: 200000, effect: 500 },
+      { name: "Nightmare Fuel", type: "FPS", cost: 500000, effect: 1500 }
+    ]
+  },
+  {
+    name: "🔪 Chucky",
+    unlock: 250000,
+    multiplier: 20,
+    upgrades: [
+      { name: "Doll's Wrath", type: "FPC", cost: 500000, effect: 2000 },
+      { name: "Toy Terror", type: "FPS", cost: 800000, effect: 5000 }
+    ]
+  },
+  {
+    name: "👻 Ghostface",
+    unlock: 1000000,
+    multiplier: 50,
+    upgrades: [
+      { name: "Phone Call Panic", type: "FPC", cost: 1200000, effect: 4000 },
+      { name: "Slasher Surprise", type: "FPS", cost: 2500000, effect: 10000 }
+    ]
+  },
+  {
+    name: "🎈 Pennywise",
+    unlock: 2500000,
+    multiplier: 75,
+    upgrades: [
+      { name: "Balloon Bite", type: "FPC", cost: 4000000, effect: 7500 },
+      { name: "Sewer Terror", type: "FPS", cost: 8000000, effect: 20000 }
+    ]
+  },
+  {
+    name: "🧩 Billy (Jigsaw)",
+    unlock: 5000000,
+    multiplier: 100,
+    upgrades: [
+      { name: "Game Begins", type: "FPC", cost: 7000000, effect: 12000 },
+      { name: "Puzzle Trap", type: "FPS", cost: 12000000, effect: 30000 }
+    ]
+  }
+];
+
+function format(n) {
+  return n.toLocaleString("en-US");
+}
+
+function updateDisplay() {
+  document.getElementById("fear").innerText = format(fear);
+  document.getElementById("fpc").innerText = format(fpc);
+  document.getElementById("fps").innerText = format(fps);
+  document.getElementById("killerName").innerText = killers[currentKiller].name;
+  const upgDiv = document.getElementById("upgrades");
+  upgDiv.innerHTML = "";
+  const killer = killers[currentKiller];
+  if (fear >= killer.unlock) {
+    killer.upgrades.forEach((upg, idx) => {
+      const btn = document.createElement("div");
+      btn.className = "upgrade";
+      btn.onclick = () => buyUpgrade(currentKiller, idx);
+      btn.innerHTML = `<strong>${upg.name}</strong><br>Type: ${upg.type}, +${format(upg.effect)}<br>Cost: ${format(upg.cost)} Fear`;
+      upgDiv.appendChild(btn);
+    });
+  } else {
+    upgDiv.innerHTML = `<p>🔒 Unlocks at ${format(killer.unlock)} Fear!</p>`;
+  }
+}
+
+function clickKiller() {
+  const mult = killers[currentKiller].multiplier;
+  fear += fpc * mult;
+  updateDisplay();
+}
+
+function buyUpgrade(kIndex, uIndex) {
+  const upg = killers[kIndex].upgrades[uIndex];
+  if (fear >= upg.cost) {
+    fear -= upg.cost;
+    if (upg.type === "FPC") fpc += upg.effect;
+    if (upg.type === "FPS") fps += upg.effect;
+    upg.effect = Math.floor(upg.effect * 1.5);
+    upg.cost = Math.floor(upg.cost * 1.5);
+    updateDisplay();
+  }
+}
+
+function nextKiller() {
+  if (currentKiller < killers.length - 1) currentKiller++;
+  updateDisplay();
+}
+
+function prevKiller() {
+  if (currentKiller > 0) currentKiller--;
+  updateDisplay();
+}
+
+setInterval(() => {
+  fear += fps;
+  updateDisplay();
+}, 1000);
+
+// Easter Egg: Click Chucky's name 20 times to unlock "Chucky & Tiffany"
+function countKillerClicks() {
+  const name = killers[currentKiller].name;
+  if (name.includes("Chucky") && !chuckyUnlocked) {
+    chuckyClickCount++;
+    if (chuckyClickCount === 20) {
+      killers.push({
+        name: "💘 Chucky & Tiffany",
+        unlock: 0,
+        multiplier: 999,
+        upgrades: [
+          { name: "Love Slash", type: "FPC", cost: 1, effect: 99999 },
+          { name: "Honeymoon Horror", type: "FPS", cost: 10, effect: 50000 }
+        ]
+      });
+      alert("💘 You unlocked the secret killer: Chucky & Tiffany!");
+      chuckyUnlocked = true;
+      currentKiller = killers.length - 1;
+      updateDisplay();
+    }
+  }
+}
+
+updateDisplay();
+</script>
+</body>
+</html>
