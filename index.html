@@ -56,22 +56,22 @@ let fear = 0;
 let fpc = 1;
 let fps = 0;
 let currentKiller = 0;
-let lastUnlockedKillerIndex = 0; // track last unlocked killer index
+let lastUnlockedKillerIndex = 0;
 let chuckyClickCount = 0;
 let chuckyUnlocked = false;
 let tiffanyClickCount = 0;
 let tiffanyUpgradesUnlocked = false;
 
-// Audio files for killers
+// Audio for each killer (updated Freddy)
 const killerAudio = {
   "🪓 Jason Voorhees": new Audio('jason.mp3'),
   "🔪 Michael Myers": new Audio('michael.mp3'),
-  "🧤 Freddy Krueger": new Audio('freddy.mp3'),
+  "🧤 Freddy Krueger": new Audio('1,-2,-freddys-coming-for-you.mp3'),
   "🔪 Chucky": new Audio('chucky.mp3'),
   "👻 Ghostface": new Audio('ghostface.mp3'),
   "🎈 Pennywise": new Audio('pennywise.mp3'),
   "🧩 Billy (Jigsaw)": new Audio('billy.mp3'),
-  "💘 Chucky & Tiffany": new Audio('Chucky.mp3')  // uppercase Chucky for secret killer
+  "💘 Chucky & Tiffany": new Audio('Chucky.mp3')
 };
 
 const killers = [
@@ -85,7 +85,7 @@ const killers = [
       { name: "Crystal Lake Curse", type: "FPS", cost: 1000, effect: 50 },
       { name: "Silent Stalk", type: "FPC", cost: 3000, effect: 150 },
       { name: "Mask of Terror", type: "FPS", cost: 8000, effect: 400 },
-      { name: "Unstoppable Force", type: "FPC", cost: 15000, effect: 1000 },
+      { name: "Unstoppable Force", type: "FPC", cost: 15000, effect: 1000 }
     ]
   },
   {
@@ -97,7 +97,7 @@ const killers = [
       { name: "Halloween Haunt", type: "FPS", cost: 40000, effect: 500 },
       { name: "Shadow Step", type: "FPC", cost: 90000, effect: 600 },
       { name: "Knife Frenzy", type: "FPS", cost: 150000, effect: 1200 },
-      { name: "Stalker’s Grip", type: "FPC", cost: 300000, effect: 2500 },
+      { name: "Stalker’s Grip", type: "FPC", cost: 300000, effect: 2500 }
     ]
   },
   {
@@ -108,7 +108,7 @@ const killers = [
       { name: "Dream Slash", type: "FPC", cost: 200000, effect: 500 },
       { name: "Nightmare Fuel", type: "FPS", cost: 500000, effect: 1500 },
       { name: "Claw Frenzy", type: "FPC", cost: 900000, effect: 3000 },
-      { name: "Dreamscape Terror", type: "FPS", cost: 2000000, effect: 6000 },
+      { name: "Dreamscape Terror", type: "FPS", cost: 2000000, effect: 6000 }
     ]
   },
   {
@@ -119,7 +119,7 @@ const killers = [
       { name: "Doll's Wrath", type: "FPC", cost: 500000, effect: 2000 },
       { name: "Toy Terror", type: "FPS", cost: 800000, effect: 5000 },
       { name: "Sinister Grin", type: "FPC", cost: 2000000, effect: 7000 },
-      { name: "Playtime Panic", type: "FPS", cost: 3500000, effect: 12000 },
+      { name: "Playtime Panic", type: "FPS", cost: 3500000, effect: 12000 }
     ]
   },
   {
@@ -130,7 +130,7 @@ const killers = [
       { name: "Phone Call Panic", type: "FPC", cost: 1200000, effect: 4000 },
       { name: "Slasher Surprise", type: "FPS", cost: 2500000, effect: 10000 },
       { name: "Mask Tear", type: "FPC", cost: 6000000, effect: 15000 },
-      { name: "Final Scream", type: "FPS", cost: 10000000, effect: 25000 },
+      { name: "Final Scream", type: "FPS", cost: 10000000, effect: 25000 }
     ]
   },
   {
@@ -141,7 +141,7 @@ const killers = [
       { name: "Balloon Bite", type: "FPC", cost: 4000000, effect: 7500 },
       { name: "Sewer Terror", type: "FPS", cost: 8000000, effect: 20000 },
       { name: "Clown's Curse", type: "FPC", cost: 15000000, effect: 20000 },
-      { name: "Lurking Fear", type: "FPS", cost: 30000000, effect: 40000 },
+      { name: "Lurking Fear", type: "FPS", cost: 30000000, effect: 40000 }
     ]
   },
   {
@@ -152,12 +152,12 @@ const killers = [
       { name: "Game Begins", type: "FPC", cost: 7000000, effect: 12000 },
       { name: "Puzzle Trap", type: "FPS", cost: 12000000, effect: 30000 },
       { name: "Final Puzzle", type: "FPC", cost: 25000000, effect: 40000 },
-      { name: "Trap Master", type: "FPS", cost: 50000000, effect: 75000 },
+      { name: "Trap Master", type: "FPS", cost: 50000000, effect: 75000 }
     ]
   }
 ];
 
-// For Chucky & Tiffany secret killer and their upgrades
+// Chucky & Tiffany secret upgrades
 const chuckyTiffanyBaseUpgrades = [
   { name: "Love Slash", type: "FPC", cost: 1, effect: 99999 },
   { name: "Honeymoon Horror", type: "FPS", cost: 10, effect: 50000 }
@@ -194,38 +194,29 @@ function updateDisplay() {
 }
 
 function playAudioForKiller(killerName) {
-  // Stop all killer audios first
   Object.values(killerAudio).forEach(audio => {
     audio.pause();
     audio.currentTime = 0;
   });
-
-  // Play audio for current killer if it exists
-  if(killerAudio[killerName]){
+  if (killerAudio[killerName]) {
     killerAudio[killerName].play();
   }
 }
 
 function clickKiller() {
-  const mult = killers[currentKiller].multiplier;
-  fear += fpc * mult;
+  fear += fpc * killers[currentKiller].multiplier;
   checkUnlocks();
   updateDisplay();
 }
 
-// Check if you just unlocked a killer and play their theme if so
 function checkUnlocks() {
-  // Go through killers in order, unlock if fear >= unlock
-  for(let i = lastUnlockedKillerIndex + 1; i < killers.length; i++) {
-    if(fear >= killers[i].unlock){
+  for (let i = lastUnlockedKillerIndex + 1; i < killers.length; i++) {
+    if (fear >= killers[i].unlock) {
       lastUnlockedKillerIndex = i;
       alert(`🎉 You unlocked: ${killers[i].name}!`);
       playAudioForKiller(killers[i].name);
-      // If unlocking secret killer, handle special unlock too (Chucky & Tiffany)
-      if(killers[i].name === "💘 Chucky & Tiffany"){
-        chuckyUnlocked = true;
-      }
-      break; // only unlock one killer at a time
+      if (killers[i].name === "💘 Chucky & Tiffany") chuckyUnlocked = true;
+      break;
     }
   }
 }
@@ -258,11 +249,9 @@ setInterval(() => {
   updateDisplay();
 }, 1000);
 
-// Easter Egg: Click Chucky's name 20 times to unlock "Chucky & Tiffany"
 function countKillerClicks() {
   const name = killers[currentKiller].name;
 
-  // Unlock Chucky & Tiffany secret killer
   if (name.includes("Chucky") && !chuckyUnlocked) {
     chuckyClickCount++;
     if (chuckyClickCount === 20) {
@@ -280,7 +269,6 @@ function countKillerClicks() {
     }
   }
 
-  // If currently Chucky & Tiffany, tapping Tiffany 5 times unlocks extra OP upgrades
   if (name.includes("Tiffany") && chuckyUnlocked && !tiffanyUpgradesUnlocked) {
     tiffanyClickCount++;
     if (tiffanyClickCount === 5) {
@@ -292,10 +280,9 @@ function countKillerClicks() {
   }
 }
 
-// At start, play Jason's music (since unlocked by default)
+// Start with Jason music
 playAudioForKiller("🪓 Jason Voorhees");
 updateDisplay();
-
 </script>
 </body>
 </html>
