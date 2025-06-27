@@ -61,6 +61,18 @@ let chuckyUnlocked = false;
 let tiffanyClickCount = 0;
 let tiffanyUpgradesUnlocked = false;
 
+// Audio files for killers
+const killerAudio = {
+  "🪓 Jason Voorhees": new Audio('jason.mp3'),
+  "🔪 Michael Myers": new Audio('michael.mp3'),
+  "🧤 Freddy Krueger": new Audio('freddy.mp3'),
+  "🔪 Chucky": new Audio('chucky.mp3'),
+  "👻 Ghostface": new Audio('ghostface.mp3'),
+  "🎈 Pennywise": new Audio('pennywise.mp3'),
+  "🧩 Billy (Jigsaw)": new Audio('billy.mp3'),
+  "💘 Chucky & Tiffany": new Audio('Chucky.mp3')  // uppercase Chucky for secret killer
+};
+
 const killers = [
   {
     name: "🪓 Jason Voorhees",
@@ -144,6 +156,7 @@ const killers = [
   }
 ];
 
+// For Chucky & Tiffany secret killer and their upgrades
 const chuckyTiffanyBaseUpgrades = [
   { name: "Love Slash", type: "FPC", cost: 1, effect: 99999 },
   { name: "Honeymoon Horror", type: "FPS", cost: 10, effect: 50000 }
@@ -179,6 +192,19 @@ function updateDisplay() {
   }
 }
 
+function playAudioForKiller(killerName) {
+  // Stop all killer audios first
+  Object.values(killerAudio).forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  // Play audio for current killer if it exists
+  if(killerAudio[killerName]){
+    killerAudio[killerName].play();
+  }
+}
+
 function clickKiller() {
   const mult = killers[currentKiller].multiplier;
   fear += fpc * mult;
@@ -198,12 +224,18 @@ function buyUpgrade(kIndex, uIndex) {
 }
 
 function nextKiller() {
-  if (currentKiller < killers.length - 1) currentKiller++;
+  if (currentKiller < killers.length - 1) {
+    currentKiller++;
+    playAudioForKiller(killers[currentKiller].name);
+  }
   updateDisplay();
 }
 
 function prevKiller() {
-  if (currentKiller > 0) currentKiller--;
+  if (currentKiller > 0) {
+    currentKiller--;
+    playAudioForKiller(killers[currentKiller].name);
+  }
   updateDisplay();
 }
 
@@ -212,15 +244,11 @@ setInterval(() => {
   updateDisplay();
 }, 1000);
 
-// 🔊 Chucky Audio Triggered at 1st Click & Chucky & Tiffany Unlock
+// Easter Egg: Click Chucky's name 20 times to unlock "Chucky & Tiffany"
 function countKillerClicks() {
   const name = killers[currentKiller].name;
 
-  if (name.includes("Chucky") && chuckyClickCount === 0 && !chuckyUnlocked) {
-    new Audio("chucky.mp3").play();
-    setTimeout(() => new Audio("Chucky.mp3").play(), 3000);
-  }
-
+  // Unlock Chucky & Tiffany
   if (name.includes("Chucky") && !chuckyUnlocked) {
     chuckyClickCount++;
     if (chuckyClickCount === 20) {
@@ -231,17 +259,14 @@ function countKillerClicks() {
         upgrades: [...chuckyTiffanyBaseUpgrades]
       });
       alert("💘 You unlocked the secret killer: Chucky & Tiffany!");
-
-      // Play both audio files again on unlock
-      new Audio("chucky.mp3").play();
-      setTimeout(() => new Audio("Chucky.mp3").play(), 3000);
-
       chuckyUnlocked = true;
       currentKiller = killers.length - 1;
       updateDisplay();
+      playAudioForKiller("💘 Chucky & Tiffany");
     }
   }
 
+  // If currently Chucky & Tiffany, tapping Tiffany 5 times unlocks extra OP upgrades
   if (name.includes("Tiffany") && chuckyUnlocked && !tiffanyUpgradesUnlocked) {
     tiffanyClickCount++;
     if (tiffanyClickCount === 5) {
@@ -249,11 +274,15 @@ function countKillerClicks() {
       alert("🔥 Tiffany's secret OP upgrades unlocked!");
       tiffanyUpgradesUnlocked = true;
       updateDisplay();
+      playAudioForKiller("💘 Chucky & Tiffany");
     }
   }
 }
 
+// Play initial killer audio
+playAudioForKiller(killers[currentKiller].name);
 updateDisplay();
+
 </script>
 </body>
 </html>
