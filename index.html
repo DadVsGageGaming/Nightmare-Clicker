@@ -51,6 +51,10 @@
   <h2>Upgrades</h2>
   <div id="upgrades"></div>
 
+  <!-- Audio files -->
+  <audio id="jasonAudio" src="jason.mp3"></audio>
+  <audio id="michaelAudio" src="michael.mp3"></audio>
+
 <script>
 let fear = 0;
 let fpc = 1;
@@ -207,6 +211,36 @@ function countKillerClicks() {
     }
   }
 }
+
+// --- Audio code added below ---
+
+// Play Jason theme on page load
+window.addEventListener("load", () => {
+  const jasonAudio = document.getElementById("jasonAudio");
+  jasonAudio.play().catch(() => {
+    console.warn("🔇 Jason audio autoplay blocked. Will play on first click.");
+  });
+});
+
+// Track if Michael's music already played
+let michaelMusicPlayed = false;
+
+// Wrap original updateDisplay to add Michael's music trigger
+const originalUpdateDisplay = updateDisplay;
+updateDisplay = function () {
+  originalUpdateDisplay();
+
+  if (
+    killers[currentKiller].name.includes("Michael Myers") &&
+    fear >= killers[currentKiller].unlock &&
+    !michaelMusicPlayed
+  ) {
+    document.getElementById("michaelAudio").play().catch(() => {
+      console.warn("🔇 Michael's music couldn't autoplay.");
+    });
+    michaelMusicPlayed = true;
+  }
+};
 
 updateDisplay();
 </script>
