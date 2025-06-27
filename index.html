@@ -56,7 +56,6 @@ let fear = 0;
 let fpc = 1;
 let fps = 0;
 let currentKiller = 0;
-let killerClickCount = 0;
 let chuckyClickCount = 0;
 let chuckyUnlocked = false;
 let tiffanyClickCount = 0;
@@ -145,7 +144,6 @@ const killers = [
   }
 ];
 
-// For Chucky & Tiffany secret killer and their upgrades
 const chuckyTiffanyBaseUpgrades = [
   { name: "Love Slash", type: "FPC", cost: 1, effect: 99999 },
   { name: "Honeymoon Horror", type: "FPS", cost: 10, effect: 50000 }
@@ -214,11 +212,15 @@ setInterval(() => {
   updateDisplay();
 }, 1000);
 
-// Easter Egg: Click Chucky's name 20 times to unlock "Chucky & Tiffany"
+// 🔊 Chucky Audio Triggered at 1st Click & Chucky & Tiffany Unlock
 function countKillerClicks() {
   const name = killers[currentKiller].name;
 
-  // Unlock Chucky & Tiffany
+  if (name.includes("Chucky") && chuckyClickCount === 0 && !chuckyUnlocked) {
+    new Audio("chucky.mp3").play();
+    setTimeout(() => new Audio("Chucky.mp3").play(), 3000);
+  }
+
   if (name.includes("Chucky") && !chuckyUnlocked) {
     chuckyClickCount++;
     if (chuckyClickCount === 20) {
@@ -229,17 +231,20 @@ function countKillerClicks() {
         upgrades: [...chuckyTiffanyBaseUpgrades]
       });
       alert("💘 You unlocked the secret killer: Chucky & Tiffany!");
+
+      // Play both audio files again on unlock
+      new Audio("chucky.mp3").play();
+      setTimeout(() => new Audio("Chucky.mp3").play(), 3000);
+
       chuckyUnlocked = true;
       currentKiller = killers.length - 1;
       updateDisplay();
     }
   }
 
-  // If currently Chucky & Tiffany, tapping Tiffany 5 times unlocks extra OP upgrades
   if (name.includes("Tiffany") && chuckyUnlocked && !tiffanyUpgradesUnlocked) {
     tiffanyClickCount++;
     if (tiffanyClickCount === 5) {
-      // Add extra OP upgrades to Chucky & Tiffany
       killers[currentKiller].upgrades.push(...chuckyTiffanyExtraUpgrades);
       alert("🔥 Tiffany's secret OP upgrades unlocked!");
       tiffanyUpgradesUnlocked = true;
